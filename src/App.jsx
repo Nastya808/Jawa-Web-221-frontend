@@ -4,20 +4,17 @@ import './App.css';
 function App() {
   const { register, handleSubmit, control, formState: { errors }, watch } = useForm({
     defaultValues: { 
-      name: '', 
-      dob: '', 
-      email: '', 
-      login: '', 
-      password: '', 
-      confirmPassword: '', 
-      city: '',
-      extraEmail: [] 
+      name: '', dob: '', email: '', login: '', password: '', confirmPassword: '', city: '',
+      extraEmails: [], phones: []
     }
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "extraEmail"
+  const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({
+    control, name: "extraEmails"
+  });
+
+  const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({
+    control, name: "phones"
   });
 
   const sendForm = (data) => {
@@ -28,67 +25,59 @@ function App() {
     })
     .then(r => r.json())
     .then(j => console.log(j));
-  }
+  };
 
   return (
     <form id='formRegistration' className="form-container" onSubmit={handleSubmit(sendForm)}>
       <h2>Register</h2>
 
-      <div className="input-group">
-        <input {...register("name", { 
-          required: "Name required", 
-          pattern: { value: /^[a-zA-Z]{5,20}$/, message: "Only letters, min 5, max 20" }
-        })} type="text" placeholder='Enter name *' />
-        {errors.name && <span className="error-text">{errors.name.message}</span>}
+      <input {...register("name", { required: "Name required" })} placeholder='Name *' />
+      {errors.name && <span>{errors.name.message}</span>}
+
+      <input {...register("dob", { required: "Date of birth required" })} type='date' placeholder='DOB *' />
+      {errors.dob && <span>{errors.dob.message}</span>}
+
+      <input {...register("city", { required: "City required" })} placeholder="City *" />
+      {errors.city && <span>{errors.city.message}</span>}
+
+      <input {...register("email", { required: "Email required" })} type='email' placeholder='Email *' />
+      {errors.email && <span>{errors.email.message}</span>}
+
+      <div>
+        <label>Additional Emails:</label>
+        {emailFields.map((item, index) => (
+          <div key={item.id}>
+            <input {...register(`extraEmails.${index}`)} placeholder="Extra Email" />
+            <button type="button" onClick={() => removeEmail(index)}>Remove</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => appendEmail('')}>Add Email</button>
       </div>
 
-      <div className="input-group">
-        <input {...register('dob', { required: "Date of birth required" })} type='date' placeholder='Enter date of birth *' />
-        {errors.dob && <span className="error-text">{errors.dob.message}</span>}
+      <div>
+        <label>Phones:</label>
+        {phoneFields.map((item, index) => (
+          <div key={item.id}>
+            <input {...register(`phones.${index}`)} placeholder="Phone" />
+            <button type="button" onClick={() => removePhone(index)}>Remove</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => appendPhone('')}>Add Phone</button>
       </div>
 
-      <div className="input-group">
-        <input {...register("city", { 
-          required: "City required", 
-          pattern: { value: /^[A-ZА-Я][a-zа-я\s-]{1,30}$/, message: "First letter uppercase, min 2" }
-        })} type="text" placeholder="Enter city" />
-        {errors.city && <span className="error-text">{errors.city.message}</span>}
-      </div>
+      <input {...register("login", { required: "Login required" })} placeholder='Login *' />
+      {errors.login && <span>{errors.login.message}</span>}
 
-      <div className="input-group">
-        <input {...register("email", { 
-          required: "Email required", 
-          pattern: { value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, message: "example@domain.com" }
-        })} type='email' placeholder='Enter email *' />
-        {errors.email && <span className="error-text">{errors.email.message}</span>}
-      </div>
+      <input {...register('password', { required: "Password required" })} type='password' placeholder='Password *' />
+      {errors.password && <span>{errors.password.message}</span>}
 
+      <input {...register('confirmPassword', { 
+        required: "Confirm password required", 
+        validate: value => value === watch('password') || "Passwords do not match"
+      })} type='password' placeholder='Repeat password *' />
+      {errors.confirmPassword && <span>{errors.confirmPassword.message}</span>}
 
-      <div className="input-group">
-        <input {...register("login", { 
-          required: "Login required", 
-          pattern: { value: /^[a-zA-Z0-9._%+-]{5,20}$/, message: "Letters, numbers, (. _ % + -), min 5 max 20" }
-        })} type='text' placeholder='Enter Login *' />
-        {errors.login && <span className="error-text">{errors.login.message}</span>}
-      </div>
-
-      <div className="input-group">
-        <input {...register('password', { 
-          required: "Password required", 
-          pattern: { value: /^[a-zA-Z0-9._%+-]{5,20}$/, message: "Letters, numbers, (. _ % + -), min 5 max 20" }
-        })} type='password' placeholder='Enter password *' />
-        {errors.password && <span className="error-text">{errors.password.message}</span>}
-      </div>
-
-      <div className="input-group">
-        <input {...register('confirmPassword', { 
-          required: "Confirm password required", 
-          validate: (value) => value === watch('password') || "Passwords do not match"
-        })} type='password' placeholder='Repeat password *' />
-        {errors.confirmPassword && <span className="error-text">{errors.confirmPassword.message}</span>}
-      </div>
-
-      <button type="submit" className="btn-submit">Register</button>
+      <button type="submit">Register</button>
     </form>
   );
 }
