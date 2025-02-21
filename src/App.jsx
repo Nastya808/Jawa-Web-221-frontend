@@ -1,85 +1,46 @@
-import { useFieldArray, useForm } from "react-hook-form";
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState } from "react";
+import Home from "./views/Home/Home";
+import Signup from "./views/Signup/Signup";
+import Signin from "./views/Signin/Signin";
+import AppContext from "./AppContext";
+import Profile from "./views/Profile/Profile";
+
 
 function App() {
-  const { register, handleSubmit, control, formState: { errors }, watch } = useForm({
-    defaultValues: { 
-      name: '', dob: '', email: '', login: '', password: '', confirmPassword: '', city: '',
-      extraEmails: [], phones: []
-    }
-  });
 
-  const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({
-    control, name: "extraEmails"
-  });
+  const [user, setUser] = useState(null);
 
-  const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({
-    control, name: "phones"
-  });
+  return <AppContext.Provider value={{ user, setUser ,request}}>
 
-  const sendForm = (data) => {
-    fetch("http://localhost:8080/Java_Web/home", { 
-      method: "POST",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    .then(r => r.json())
-    .then(j => console.log(j));
-  };
+    <Router>
 
-  return (
-    <form id='formRegistration' className="form-container" onSubmit={handleSubmit(sendForm)}>
-      <h2>Register</h2>
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/profile' element={<Profile />}></Route>
+        <Route path='/signup' element={<Signup />} />
+        <Route path='/signin' element={<Signin />} />
+      </Routes>
 
-      <input {...register("name", { required: "Name required" })} placeholder='Name *' />
-      {errors.name && <span>{errors.name.message}</span>}
+    </Router>
 
-      <input {...register("dob", { required: "Date of birth required" })} type='date' placeholder='DOB *' />
-      {errors.dob && <span>{errors.dob.message}</span>}
+  </AppContext.Provider>
 
-      <input {...register("city", { required: "City required" })} placeholder="City *" />
-      {errors.city && <span>{errors.city.message}</span>}
 
-      <input {...register("email", { required: "Email required" })} type='email' placeholder='Email *' />
-      {errors.email && <span>{errors.email.message}</span>}
-
-      <div>
-        <label>Additional Emails:</label>
-        {emailFields.map((item, index) => (
-          <div key={item.id}>
-            <input {...register(`extraEmails.${index}`)} placeholder="Extra Email" />
-            <button type="button" onClick={() => removeEmail(index)}>Remove</button>
-          </div>
-        ))}
-        <button type="button" onClick={() => appendEmail('')}>Add Email</button>
-      </div>
-
-      <div>
-        <label>Phones:</label>
-        {phoneFields.map((item, index) => (
-          <div key={item.id}>
-            <input {...register(`phones.${index}`)} placeholder="Phone" />
-            <button type="button" onClick={() => removePhone(index)}>Remove</button>
-          </div>
-        ))}
-        <button type="button" onClick={() => appendPhone('')}>Add Phone</button>
-      </div>
-
-      <input {...register("login", { required: "Login required" })} placeholder='Login *' />
-      {errors.login && <span>{errors.login.message}</span>}
-
-      <input {...register('password', { required: "Password required" })} type='password' placeholder='Password *' />
-      {errors.password && <span>{errors.password.message}</span>}
-
-      <input {...register('confirmPassword', { 
-        required: "Confirm password required", 
-        validate: value => value === watch('password') || "Passwords do not match"
-      })} type='password' placeholder='Repeat password *' />
-      {errors.confirmPassword && <span>{errors.confirmPassword.message}</span>}
-
-      <button type="submit">Register</button>
-    </form>
-  );
 }
+
+const request = (url, conf) => new Promise((resolve, reject) => {
+  const backHost = "http://localhost:8080/Java_Web";
+  fetch(backHost + url, conf)
+    .then(r => r.json())
+    .then(j => {
+      if (j.status < 300) {
+        resolve(j.data);
+      } else {
+        reject(j);
+      }
+    })
+    .catch(reject);
+});
 
 export default App;
