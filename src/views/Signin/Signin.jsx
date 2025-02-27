@@ -13,7 +13,6 @@ function Signin() {
     const { user, setUser, request } = useContext(AppContext);
 
     const sendForm = (data) => {
-        //rfc7617
 
         let datac = data.email + ':' + data.password;
         let credentials = btoa(datac);
