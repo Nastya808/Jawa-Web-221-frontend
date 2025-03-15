@@ -1,7 +1,11 @@
 import { useContext } from "react";
 import { useForm } from "react-hook-form";
-import AppContext from "../../AppContext";
+import AppContext from "../../Components/AppContext";
 import { useNavigate } from "react-router-dom";
+import DecodeJWT from "../../Services/DecodeJWT";
+
+
+const decodeJWT = new DecodeJWT();
 
 function Signin() {
 
@@ -10,7 +14,7 @@ function Signin() {
         defaultValues: { email: '', password: '' }
     });
 
-    const { user, setUser, request } = useContext(AppContext);
+    const { setAccessToken, setUser, request, setRole } = useContext(AppContext);
 
     const sendForm = (data) => {
 
@@ -21,9 +25,20 @@ function Signin() {
             headers: {
                 'Authorization': 'Basic ' + credentials,
             },
-        }).then(data=>{
-            setUser(data);
-            navigate('/profile');
+        }).then(data => {
+            setUser(data.user);
+            setAccessToken(data.jwtToken);
+            decodeJWT.jwtDecode(data.jwtToken);
+            setRole(decodeJWT.getRole());
+           
+            if (decodeJWT.getRole() === "guest") {
+
+                navigate('/profile');
+            } else if (decodeJWT.getRole() === "admin") {
+                navigate('/admin');
+            }
+
+            console.log(data);
         }).catch(console.log);
 
     }
@@ -32,7 +47,6 @@ function Signin() {
     return (
 
         <form onSubmit={handleSubmit(sendForm)}>
-
             <input  {...register("email")} type='email' placeholder='Enter email *' />
             <input {...register('password')} type='password' placeholder='Enter password *' />
             <button>Sign in</button>

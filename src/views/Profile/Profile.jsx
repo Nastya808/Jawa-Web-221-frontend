@@ -1,18 +1,19 @@
-import { useContext, useState } from "react";
+import { useContext} from "react";
 import { Link } from "react-router-dom";
-import AppContext from "../../AppContext";
+import AppContext from "../../Components/AppContext";
 import { useForm } from "react-hook-form";
 import "./profile.css";
 
 function Profile() {
-    const { user, setUser } = useContext(AppContext);
-    return (<>{user == null ? <AnonView /> : <AuthView />}</>);
+    const {user,role} = useContext(AppContext);
+    return (<>{user == null || role!=='guest' ? <AnonView /> : <AuthView />}</>);
 }
 
 function AuthView() {
 
-    const { user, setUser, request } = useContext(AppContext);
+    const { user, setUser, request,setAccessToken,accessToken} = useContext(AppContext);
 
+  
     const { register, handleSubmit, formState: { errors }, watch } = useForm({
         defaultValues: {
             userId: user.userId,
@@ -32,9 +33,6 @@ function AuthView() {
 
 
     const saveChange = (formData) => {
-
-
-        console.log(formData);
         request("/user", {
             method: "PUT",
             headers: {
@@ -42,6 +40,7 @@ function AuthView() {
             },
             body: JSON.stringify(formData)
         }).then(data => {
+          
             setUser(data);
         }).catch(err => console.log(err));
 
@@ -54,26 +53,13 @@ function AuthView() {
             }).then(data => {
                 console.log(data);
                 setUser(null);
+                setAccessToken(null);
             }).catch(err => console.log(err));
         console.log(user.userId, "DEL")
     };
     return (
-        <>
-            <div id='header-profile'>
-                <span className='user-info'>
-                    Your Email: {user.email}
-                </span>
-                <br />
-                <span className='user-info'>
-                    Your Name: {user.name}
-                </span>
-                <br />
-                <span className='user-info'>
-                    Your birthday:  {user.dofb}
-                </span>
-
-
-            </div>
+      
+          
             <div id='content-profile'>
                 <form id='form-change-profile' onSubmit={handleSubmit(saveChange)} >
                     <div>
@@ -123,7 +109,7 @@ function AuthView() {
 
             </div>
 
-        </>
+        
     )
 }
 
