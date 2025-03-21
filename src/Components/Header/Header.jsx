@@ -1,15 +1,16 @@
 import { Link } from "react-router-dom";
 import { useContext} from "react";
-import AppContext from "../../AppContext";
+import AppContext from "../AppContext";
+import Cart from "../Cart/Cart";
 
 const Header = () => {
-    const { user } = useContext(AppContext);
+    const { user,cart } = useContext(AppContext);
 
     return (
         <header className="boxShadow" >
             <div className='header-logo'>
 
-                The Super-puper shop
+                Shop
 
             </div>
 
@@ -17,6 +18,8 @@ const Header = () => {
                 <span className="user-name">
                     Hello, {user?user.name:"You need to login or registration"}.
                 </span>
+
+                <Cart />
             </div>
 
             <div className='header-menu'>
